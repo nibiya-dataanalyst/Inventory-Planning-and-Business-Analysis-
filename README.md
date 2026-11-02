@@ -1,107 +1,67 @@
-# 📊 Inventory Planning & Business Analysis – Demand Forecasting & Optimization Platform
+Inventory Planning & Business Analysis: Time-Series Demand Forecasting (LSTM & Deep Learning)
+An end-to-end time-series forecasting and inventory data analysis pipeline leveraging Python, TensorFlow/Keras, Scikit-Learn, and Seaborn. This project explores large-scale historical inventory datasets spanning multi-store and multi-category retail domains to predict demand, track sales performance, and optimize inventory replenishment logic.
 
-## 📌 Executive Summary
+🚀 Project Overview
+Effective inventory management is critical for minimizing stockouts and holding costs in retail supply chains. This repository contains an analytical workspace and deep learning pipeline built to:
 
-**Inventory Planning and Business Analysis** is an end-to-end Machine Learning pipeline and analytics platform designed to transform historical inventory movements, purchase orders, and sales trends into actionable stock management strategies. By optimizing demand forecasting and inventory turnover, this platform eliminates stockouts, reduces holding costs, and automates data ingestion, cleaning, feature engineering, and API model serving.
+Perform Exploratory Data Analysis (EDA): Analyze 109,500+ records of granular store-product-level inventory tracking data across multiple regions and product categories.
 
-## 📈 Key Performance Indicators (KPIs)
+Feature Engineering & Preprocessing: Process temporal features, validate date ranges, check for missing values, and structure sequential data for machine learning models.
 
-| Metric | Historical Value | Forecasted / Targeted Value (Next 30 Days) | Change / Trend | 
-| ----- | ----- | ----- | ----- | 
-| **Total Inventory Value** | **\$2,470,540.80** | **\$2,286,290.00** | 📉 -7.4% Holding Cost Reduction | 
-| **Average Order Quantity (AOQ)** | **456 units** | **472 units** | 📈 +3.5% Batch Efficiency Improvement | 
-| **Total SKU Orders Processed** | **5,408** | **390 reorders** | — | 
-| **Stockout Reduction Rate** | **18.4% stockouts** | **5.2% target** | 📉 -13.2% Service Level Improvement | 
+Demand Forecasting with Deep Learning: Implement an LSTM (Long Short-Term Memory) neural network architecture using TensorFlow/Keras to forecast unit sales and inventory dynamics.
 
-## 🛠️ Data Pipeline & Exploratory Analysis Findings
+Performance Evaluation: Measure predictive error using Mean Absolute Error (MAE) and Root Mean Squared Error (RMSE).
 
-### Data Cleaning & Preprocessing
+Regional & Categorical Insights: Aggregate sales data across product lines (Clothing, Electronics, Furniture, Groceries, Toys) and geographical regions (East, West, North, South) to identify key revenue drivers.
 
-* **Initial Dataset Size:** 10,000 rows, 18 columns.
+📊 Key Datasets & Exploratory Insights
+Time Span: 729 days of continuous daily data (January 1, 2022 – December 31, 2023).
 
-* **Missing Value Imputation:**
+Granularity: Tracks Store IDs (S001–S005), Product IDs (P0016–P0187), regions, weather conditions, pricing, competitor pricing, seasonality, and promotional campaigns.
 
-  * `Supplier_Code`: 1,240 missing values imputed using mode (`"SUPPLIER_DEFAULT"`).
+Top-Performing Categories: Led by Clothing (~4.2M units sold) and Electronics (~2.5M units sold).
 
-  * `Lead_Time_Days`: 315 missing values imputed using median (`14` days).
+Regional Distribution: Sales volume remains exceptionally well-balanced across Eastern, Western, Northern, and Southern regional distribution hubs (~2.6M–2.66M units per region).
 
-* **Outlier Treatment:** Removed **142 outlier rows** via IQR method ($1.5 \times \text{IQR}$) on `Unit_Demand` ($> 3,200 \text{ units}$).
+📈 Model Performance & Evaluation
+Baseline demand forecasts compared against actual sales figures yield robust accuracy metrics on the evaluation dataset:
 
-* **Final Analysis Dataset Size:** 9,858 clean records.
+Mean Absolute Error (MAE): 13.74 units
 
-### Key Business Insights
-1. **Top Demand Category:** Technology inventory items accounted for **41.2%** of overall stock movement (\$1,017,862.80 total stock flow).
+Root Mean Squared Error (RMSE): 17.79 units
 
-2. **Seasonality:** Peak inventory demand surges consistently in **Q4 (November–December)**, driving a **34% spike** in required safety stock.
+🛠️ Tech Stack & Libraries
+Language: Python 3
 
-3. **Lead Time Impact:** Suppliers with lead times exceeding **20 days** increased buffer inventory costs by **14.5%** without significantly improving stock fulfillment reliability ($p = 0.23$).
+Deep Learning: TensorFlow, Keras (LSTM, Dense, Dropout layers)
 
-## 🤖 Model Performance & Evaluation
+Data Manipulation: Pandas, NumPy
 
-Three predictive ML algorithms were trained and evaluated on an **80/20 train-test split** (8,000 train rows / 2,000 test rows) to predict daily inventory demand levels.
+Machine Learning Metrics: Scikit-Learn (mean_absolute_error, mean_squared_error, MinMaxScaler)
 
-| Model Algorithm | MAE (Units) | RMSE (Units) | MAPE (%) | $R^2$ Score | Status | 
-| ----- | ----- | ----- | ----- | ----- | ----- | 
-| Linear Regression | 1,240.5 | 1,850.3 | 12.4% | 0.762 | Baseline | 
-| Random Forest Regressor | 810.2 | 1,120.4 | 7.8% | 0.884 | Benchmark | 
-| **XGBoost Regressor (Tuned)** | **540.1** | **795.6** | **4.9%** | **0.941** | **Selected Production Model** | 
+Data Visualization: Matplotlib, Seaborn
 
-### Selected Model Details
+📂 Code Structure & Execution Flow
+Environment Setup & Imports:
 
-* **Primary Model:** XGBoost Regressor
+Python
+import tensorflow as tf
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import LSTM, Dense, Dropout
+import pandas as pd, numpy as np, seaborn as sns, matplotlib.pyplot as plt
+Data Ingestion & Cleaning: Mounting Google Drive and reading structured CSV inventory data, performing date-time conversions, and checking null value integrity.
 
-* **Hyperparameters:** `n_estimators=300`, `max_depth=6`, `learning_rate=0.03`, `subsample=0.8`
+Exploratory Data Analysis (EDA):
 
-* **Forecast Horizons Evaluated:** 7-day, 14-day, and 30-day dynamic reorder point calculations.
+Statistical description of numerical features (Units Sold, Inventory Level, Price, Competitor Pricing, Demand Forecast).
 
-## 🚀 Serving & Deployment (FastAPI)
-The production model (`xgboost_inventory_model.pkl`) is served using a RESTful **FastAPI** backend with endpoints for stock predictions and reorder recommendations.
+Outlier detection via boxplots.
 
-* **Endpoint:** `POST /predict`
+Time-series trend plotting for daily aggregate unit sales.
 
-* **Sample Payload:**
+Demand vs. Actual Comparison: Evaluating forecast deviation and computing MAE/RMSE benchmarks.
 
-  ```json
-  {
-    "warehouse_id": 102,
-    "product_category": "Technology",
-    "lead_time_days": 14,
-    "historical_7d_demand_avg": 420.50,
-    "is_holiday_season": 0
-  }
-  ```
-
-* **Sample Response:**
-
-  ```json
-  {
-    "forecasted_demand_units": 485,
-    "recommended_reorder_point": 512,
-    "confidence_interval_95": [461, 509],
-    "model_version": "v1.2.0",
-    "status": "success"
-  }
-  ```
-
-## 📁 Repository Structure
-
-```
-├── data/
-│   ├── raw_inventory_data.csv
-│   └── processed_inventory_data.csv
-├── notebooks/
-│   ├── 01_data_cleaning_eda.ipynb
-│   └── 02_demand_forecasting_model.ipynb
-├── models/
-│   └── xgboost_inventory_model.pkl
-├── sql/
-│   └── inventory_turnover_queries.sql
-├── app/
-│   └── main.py (FastAPI Endpoint)
-├── README.md
-└── requirements.txt
-```
-
+Categorical & Regional Breakdown: Grouping and visualizing volume distribution across categories and geographic regions using bar plots.
 
 
 
